@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kdew.dewlms.course.mapper.TakeCourseMapper">
+
+    <sql id="selectListWhere">
+
+    </sql>
+
+    <select id="selectListCount"
+        parameterType="com.kdew.dewlms.course.model.CourseParam"
+        resultType="long">
+
+        SELECT count(*)
+        FROM take_course
+        WHERE 1 = 1
+        <include refid="selectListWhere"></include>
+
+
+    </select>
+
+
+    <select id="selectList"
+            parameterType="com.kdew.dewlms.course.model.TakeCourseParam"
+            resultType="com.kdew.dewlms.course.dto.TakeCourseDto">
+
+        SELECT tc.*, c.subject, m.user_name, m.phone
+        FROM take_course tc
+        JOIN course c ON tc.course_id = c.id
+        JOIN member m ON tc.user_id = m.user_id
+        WHERE 1=1
+        ORDER BY reg_dt DESC
+
+        limit #{pageStart}, #{pageEnd}
+
+    </select>
+
+    <!--userId에 해당하는 수강신청 정보-->
+    <select id="selectListMyCourse"
+            resultType="com.kdew.dewlms.course.dto.TakeCourseDto">
+
+        SELECT tc.*, c.subject
+        FROM take_course tc
+        JOIN course c ON tc.course_id = c.id
+        WHERE tc.user_id = #{userId}
+        ORDER BY reg_dt DESC
+
+        limit #{pageStart}, #{pageEnd}
+
+    </select>
+</mapper>

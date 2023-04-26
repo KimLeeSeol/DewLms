@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kdew.dewlms.admin.mapper.CategoryMapper">
+
+    <select id="select"
+            resultType="com.kdew.dewlms.admin.dto.CategoryDto">
+
+        SELECT c.*, (SELECT COUNT(*) FROM course WHERE category_id = c.id) AS course_count
+        FROM category c
+        WHERE using_yn = 1
+        ORDER BY sort_value DESC
+
+
+    </select>
+</mapper>
