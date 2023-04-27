@@ -6,6 +6,10 @@
 
     <sql id="selectListWhere">
 
+        <if test="searchCourseId > 0">
+            AND c.id = #{searchCourseId}
+        </if>
+
     </sql>
 
     <select id="selectListCount"
@@ -13,8 +17,10 @@
         resultType="long">
 
         SELECT count(*)
-        FROM take_course
-        WHERE 1 = 1
+        FROM take_course tc
+        JOIN course c ON tc.course_id = c.id
+        JOIN member m ON tc.user_id = m.user_id
+        WHERE 1=1
         <include refid="selectListWhere"></include>
 
 
@@ -30,6 +36,7 @@
         JOIN course c ON tc.course_id = c.id
         JOIN member m ON tc.user_id = m.user_id
         WHERE 1=1
+        <include refid="selectListWhere"></include>
         ORDER BY reg_dt DESC
 
         limit #{pageStart}, #{pageEnd}

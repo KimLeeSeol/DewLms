@@ -7,12 +7,14 @@ import com.kdew.dewlms.admin.model.MemberParam;
 import com.kdew.dewlms.components.MailComponents;
 import com.kdew.dewlms.course.model.ServiceResult;
 import com.kdew.dewlms.member.entity.Member;
+import com.kdew.dewlms.member.entity.MemberCode;
 import com.kdew.dewlms.member.exception.MemberNotEmailAuthException;
 import com.kdew.dewlms.member.exception.MemberStopUserException;
 import com.kdew.dewlms.member.model.MemberInput;
 import com.kdew.dewlms.member.model.ResetPasswordInput;
 import com.kdew.dewlms.member.repository.MemberRepository;
 import com.kdew.dewlms.member.service.MemberService;
+import com.kdew.dewlms.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -271,14 +273,49 @@ public class MemberServiceImpl implements MemberService {
         }
         Member member = optionalMember.get();
 
-        if (!BCrypt.checkpw(parameter.getPassword(), member.getPassword())) {
+        if (PasswordUtils.equals(parameter.getPassword(), member.getPassword())) {
             return new ServiceResult(false,"비밀번호가 일치하지 않습니다.");
         }
-        String encPassword = BCrypt.hashpw(parameter.getNewPassword(), BCrypt.gensalt());
+
+        String encPassword = PasswordUtils.encPassword(parameter.getNewPassword());
         member.setPassword(encPassword);
         memberRepository.save(member);
 
         return new ServiceResult(true);
+    }
+
+    @Override
+    public ServiceResult withdraw(String userId, String password) {
+
+        Optional<Member> optionalMember = memberRepository.findById(userId);
+        if (!optionalMember.isPresent()) {
+            return new ServiceResult(false,"회원 정보가 존재하지 않습니다.");
+        }
+
+        Member member = optionalMember.get(); // 데이터 가져오기
+
+        // 패스워드 같지 않으면 에러!
+        if (!PasswordUtils.equals(password, member.getPassword())) {
+            return new ServiceResult(false, "비밀번호가 일치하지 않습니다.");
+        }
+
+        member.setUserName("삭제 회원");
+        member.setPhone("");
+        member.setPassword("");
+        member.setRegDt(null);
+        member.setUptDt(null);
+        member.setEmailAuthYn(false);
+        member.setEmailAuthDt(null);
+        member.setEmailAuthKey(null);
+        member.setResetPasswordKey("");
+        member.setResetPasswordLimitDt(null);
+        member.setUserStatus(MemberCode.MEMBER_STATUS_WITHDRAW);
+        member.setZipcode("");
+        member.setAddr("");
+        member.setAddrDetail("");
+        memberRepository.save(member);
+
+        return new ServiceResult();
     }
 
     @Override
@@ -298,6 +335,10 @@ public class MemberServiceImpl implements MemberService {
 
         if (Member.MEMBER_STATUS_STOP.equals(member.getUserStatus())) {
             throw new MemberStopUserException("정지된 회원입니다.");
+        }
+
+        if (Member.MEMBER_STATUS_WITHDRAW.equals(member.getUserStatus())) {
+            throw new MemberStopUserException("탈퇴된 회원입니다.");
         }
 
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();

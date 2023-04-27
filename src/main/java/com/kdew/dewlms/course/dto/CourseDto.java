@@ -32,6 +32,9 @@ public class CourseDto {
     LocalDateTime regDt; // 등록 날짜
     LocalDateTime uptDt; // 수정 날짜
 
+    String filename;
+    String urlFilename;
+
     long totalCount;
     long seq;
 
@@ -49,6 +52,8 @@ public class CourseDto {
                 .saleEndDt(course.getSaleEndDt())
                 .regDt(course.getRegDt())
                 .uptDt(course.getUptDt())
+                .filename(course.getFilename())
+                .urlFilename(course.getUrlFilename())
                 .build();
     }
 

@@ -11,8 +11,10 @@ import com.kdew.dewlms.course.model.TakeCourseParam;
 import com.kdew.dewlms.course.service.CourseService;
 import com.kdew.dewlms.course.service.TakeCourseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -23,28 +25,33 @@ import java.util.List;
 @Controller
 public class AdminTakeCourseController extends BaseController{
 
+    private final CourseService courseService;
     private final TakeCourseService takeCourseService;
 
     @GetMapping("/admin/takecourse/list.do")
-    public String list(Model model, TakeCourseParam parameter) {
+    public String list(Model model, TakeCourseParam parameter
+                    , BindingResult bindingResult) {
 
         parameter.init();
 
-        List<TakeCourseDto> courseList = takeCourseService.list(parameter);
+        List<TakeCourseDto> list = takeCourseService.list(parameter);
 
 
         long totalCount = 0;
 
-        if (courseList != null && courseList.size() > 0) {
-            totalCount = courseList.get(0).getTotalCount();
+        if (list != null && list.size() > 0) {
+            totalCount = list.get(0).getTotalCount();
         }
 
         String queryString = parameter.getQueryString();
         String pagerHtml =  getPaperHtml(totalCount,parameter.getPageSize(), parameter.getPageIndex(), queryString);
 
-        model.addAttribute("list", courseList);
+        model.addAttribute("list", list);
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("pager", pagerHtml);
+
+        List<CourseDto> courseList = courseService.listAll();
+        model.addAttribute("courseList",courseList);
 
         return "admin/takecourse/list";
     }

@@ -18,7 +18,6 @@ import java.time.format.DateTimeFormatterBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 @Data
 public class TakeCourseDto {
 
